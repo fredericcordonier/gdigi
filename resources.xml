@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gresources>
+  <gresource prefix="/org/gtk/gdigi">
+    <file>data/icon.png</file>
+    <file compressed="true">data/interface.ui</file>
+  </gresource>
+</gresources>

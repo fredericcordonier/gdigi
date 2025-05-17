@@ -4,10 +4,11 @@ EXTRA_LDFLAGS ?=
 CFLAGS := $(shell pkg-config --cflags glib-2.0 gio-2.0 gtk+-3.0 libxml-2.0) -Wall -g -ansi -std=c99 $(EXTRA_CFLAGS)
 LDFLAGS = $(EXTRA_LDFLAGS) -Wl,--as-needed
 LDADD := $(shell pkg-config --libs glib-2.0 gio-2.0 gtk+-3.0 gthread-2.0 alsa libxml-2.0) -lexpat -lm
-OBJECTS = gdigi.o gui.o effects.o preset.o gtkknob.o preset_xml.o
+OBJECTS = gdigi.o gui.o effects.o preset.o gtkknob.o preset_xml.o resources.o
 DEPFILES = $(foreach m,$(OBJECTS:.o=),.$(m).m)
 
 .PHONY : clean distclean all
+
 %.o : %.c
 	$(CC) $(CFLAGS) -c $<
 
@@ -19,11 +20,14 @@ all: gdigi
 gdigi: $(OBJECTS)
 	$(CC) $(LDFLAGS) -o $@ $+ $(LDADD)
 
-images/gdigi_icon.h: images/icon.png
-	gdk-pixbuf-csource --raw --name=gdigi_icon $< > $@
+resources.c : resources.xml $(shell glib-compile-resources --generate-dependencies resources.xml)
+	glib-compile-resources --generate-source --target=$@ $<
+
+resources.h : resources.xml $(shell glib-compile-resources --generate-dependencies resources.xml)
+	glib-compile-resources  --generate-header --target=$@ $<
 
 clean:
-	rm -f *.o
+	rm -f *.o resources.c resources.h
 
 distclean : clean
 	rm -f .*.m
@@ -33,7 +37,7 @@ distclean : clean
 install: gdigi
 	install gdigi $(DESTDIR)/usr/bin
 	install -m 0644 gdigi.desktop $(DESTDIR)/usr/share/applications/
-	install -m 0644 images/gdigi.png $(DESTDIR)/usr/share/icons/
+	install -m 0644 data/gdigi.png $(DESTDIR)/usr/share/icons/
 
 NODEP_TARGETS := clean distclean
 depinc := 1

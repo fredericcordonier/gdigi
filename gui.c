@@ -15,6 +15,7 @@
  */
 
 #include <gtk/gtk.h>
+#include <glib.h>
 #include <glib-object.h>
 #include <string.h>
 #include <alsa/asoundlib.h>
@@ -23,9 +24,7 @@
 #include "effects.h"
 #include "preset.h"
 #include "gtkknob.h"
-#include "images/gdigi_icon.h"
 #include "gdigi_xml.h"
-
 
 static gchar* MessageID_names[] = {
     [REQUEST_WHO_AM_I] = "REQUEST_WHO_AM_I",
@@ -380,20 +379,30 @@ static void apply_widget_setting(WidgetTreeElem *el, SettingParam *param)
 }
 
 /**
- *  \param param SettingParam to apply to GUI
+ *  \param param SettingParam to apply to GUI. Shall be freed (safe) by this function.
  *
- *  Applies SettingParam to GUI
+ *  Applies SettingParam to GUI.
  **/
-void apply_setting_param_to_gui(SettingParam *param)
+gboolean apply_setting_param_to_gui(SettingParam *param)
 {
     gpointer key;
-    g_return_if_fail(param != NULL);
+    if (param == NULL) {
+        return FALSE;
+    }
 
     allow_send = FALSE;
     key = GINT_TO_POINTER((param->position << 16) | param->id);
+
     GList *list = g_tree_lookup(widget_tree, key);
-    g_list_foreach(list, (GFunc)apply_widget_setting, param);
+    if (g_list_length(list) == 0) {
+        g_warning("Unsupported parameter value %d position %d", param->id, param->position);
+    }
+    else {
+        g_list_foreach(list, (GFunc)apply_widget_setting, param);
+    }
     allow_send = TRUE;
+    setting_param_free(param);   // Possible to free this from this thread?
+    return FALSE;
 }
 
 /**
@@ -532,6 +541,7 @@ GtkWidget *create_grid(EffectSettings *settings, gint amt, GHashTable *widget_ta
         knob = gtk_knob_new(GTK_ADJUSTMENT(adj), knob_anim);
 
         widget = gtk_spin_button_new(GTK_ADJUSTMENT(adj), 1.0, 0);
+        gtk_widget_set_size_request(widget, 108, -1);  // Width: 200, Height: automatic
         gtk_spin_button_set_numeric(GTK_SPIN_BUTTON(widget), FALSE);
         gtk_spin_button_set_update_policy(GTK_SPIN_BUTTON(widget), GTK_UPDATE_IF_VALID);
 
@@ -833,18 +843,19 @@ static void clean_modifier_combo_box(GObject *combo_box, GList *list)
 /**
  * Given a linkable effect, update the combo box for the linkable parameters.
  *
- * @param[in] pos Position
- * @param[in] id Id
+ * @param[in] modifier_pos_id Position and Id; to be freed after use
  */
 void
-create_modifier_group (guint pos, guint id)
+create_modifier_group (PosId *modifier_pos_id)
 {
-    
     GtkWidget *vbox;
     gpointer key;
     WidgetTreeElem *el;
     GList *list;
     GObject *modifier_combo_box;
+    gint id = modifier_pos_id->id;
+    gint pos = modifier_pos_id->pos;
+    g_slice_free(PosId, modifier_pos_id);
 
     debug_msg(DEBUG_GROUP, "Building modifier group for position %d id %d \"%s\"",
                            pos, id, get_xml_settings(id, pos)->label);
@@ -1084,8 +1095,8 @@ static void show_store_preset_window(GtkWidget *window, gchar *default_name)
     dialog = gtk_dialog_new_with_buttons("Store preset",
                                          GTK_WINDOW(window),
                                          GTK_DIALOG_DESTROY_WITH_PARENT,
-                                         GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
-                                         GTK_STOCK_OK, GTK_RESPONSE_ACCEPT,
+                                         "_Cancel", GTK_RESPONSE_CANCEL,
+                                         "_Ok", GTK_RESPONSE_ACCEPT,
                                          NULL);
 
     vbox = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
@@ -1156,6 +1167,7 @@ static void action_show_about_dialog_cb(GtkAction *action)
         "Ahmed Toulan <thelinuxer@gmail.com>",
         "Tim LaBerge <tlaberge@visi.com>",
         "Mauro Carvalho Chehab <maurochehab@gmail.com>",
+        "Frederic Cordonier <frederic.cordonier67@gmail.com>",
         NULL
     };
 
@@ -1227,8 +1239,8 @@ static void action_open_preset_cb(GtkAction *action)
 
     dialog = gtk_file_chooser_dialog_new("Open Preset", GTK_WINDOW(window),
                                          GTK_FILE_CHOOSER_ACTION_OPEN,
-                                         GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
-                                         GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
+                                         "_Cancel", GTK_RESPONSE_CANCEL,
+                                         "_Open", GTK_RESPONSE_ACCEPT,
                                          NULL);
 
     GtkFileFilter *filter;
@@ -1367,9 +1379,10 @@ static void action_save_preset_cb(GtkAction *action)
 
     dialog = gtk_file_chooser_dialog_new("Save Preset", GTK_WINDOW(window),
                                          GTK_FILE_CHOOSER_ACTION_SAVE,
-                                         GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
-                                         GTK_STOCK_SAVE, GTK_RESPONSE_ACCEPT,
+                                         "_Cancel", GTK_RESPONSE_CANCEL,
+                                         "_Save", GTK_RESPONSE_ACCEPT,
                                          NULL);
+
     if (gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_ACCEPT) {
         gchar *filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
 
@@ -1422,58 +1435,6 @@ static void action_quit_cb(GtkAction *action)
     gtk_main_quit();
 }
 
-#ifndef DOXYGEN_SHOULD_SKIP_THIS
-
-static GtkActionEntry entries[] = {
-    {"File", NULL, "_File"},
-    {"Quit", GTK_STOCK_QUIT, "_Quit", "<control>Q", "Quit", G_CALLBACK(action_quit_cb)},
-    {"Preset", NULL, "_Preset"},
-    {"Store", NULL, "_Store Preset to Device", "<control>D", "Store Preset to Device", G_CALLBACK(action_store_cb)},
-    {"Load", GTK_STOCK_OPEN, "_Load Preset from File", "<control>O", "Load Preset from File", G_CALLBACK(action_open_preset_cb)},
-    {"Save", GTK_STOCK_SAVE, "_Save Preset to File", "<control>S", "Save Preset to File", G_CALLBACK(action_save_preset_cb)},
-    {"Help", NULL, "_Help"},
-    {"About", GTK_STOCK_ABOUT, "_About", "<control>A", "About", G_CALLBACK(action_show_about_dialog_cb)},
-};
-static guint n_entries = G_N_ELEMENTS(entries);
-
-static const gchar *menu_info =
-"<ui>"
-" <menubar name='MenuBar'>"
-"  <menu action='File'>"
-"   <separator/>"
-"   <menuitem action='Quit'/>"
-"  </menu>"
-"  <menu action='Preset'>"
-"   <menuitem action='Store'/>"
-"   <separator/>"
-"   <menuitem action='Load'/>"
-"   <menuitem action='Save'/>"
-"  </menu>"
-"  <menu action='Help'>"
-"   <menuitem action='About'/>"
-"  </menu>"
-" </menubar>"
-"</ui>";
-
-#endif /* DOXYGEN_SHOULD_SKIP_THIS */
-
-/**
- *  \param ui GtkUIManager to lookup actions
- *  \param path path to action
- *  \param window toplevel window
- *
- *  Sets action object "window" data to toplevel window.
- **/
-static void add_action_data(GtkUIManager *ui, const gchar *path, GtkWidget *window)
-{
-    GtkAction *action;
-
-    action = gtk_ui_manager_get_action(ui, path);
-    g_return_if_fail(action != NULL);
-
-    g_object_set_data(G_OBJECT(action), "window", window);
-}
-
 /**
  *  \param window toplevel window
  *  \param vbox vbox to hold menubar
@@ -1482,34 +1443,41 @@ static void add_action_data(GtkUIManager *ui, const gchar *path, GtkWidget *wind
  **/
 static void add_menubar(GtkWidget *window, GtkWidget *vbox)
 {
-    GtkUIManager *ui;
-    GtkActionGroup *actions;
-    GError *error = NULL;
+    GtkBuilder *builder = gtk_builder_new_from_resource("/org/gtk/gdigi/data/interface.ui");
 
-    actions = gtk_action_group_new("Actions");
-    gtk_action_group_add_actions(actions, entries, n_entries, NULL);
-
-    ui = gtk_ui_manager_new();
-    gtk_ui_manager_insert_action_group(ui, actions, 0);
-    g_object_unref(actions);
-    gtk_window_add_accel_group(GTK_WINDOW(window), gtk_ui_manager_get_accel_group(ui));
-
-    if (!gtk_ui_manager_add_ui_from_string(ui, menu_info, -1, &error)) {
-        g_warning("building menus failed: %s", error->message);
-        g_error_free(error);
-        error = NULL;
+    GtkWidget *menu_bar = GTK_WIDGET(gtk_builder_get_object(builder, "menu-bar"));
+    if (!menu_bar) {
+        g_error("MenuBar not found in UI file");
     }
-    gtk_box_pack_start(GTK_BOX(vbox),
-                       gtk_ui_manager_get_widget(ui, "/MenuBar"),
-                       FALSE, FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(vbox), menu_bar, FALSE, FALSE, 0);
 
-    add_action_data(ui, "/MenuBar/File/Quit", window);
-    add_action_data(ui, "/MenuBar/Preset/Store", window);
-    add_action_data(ui, "/MenuBar/Preset/Save", window);
-    add_action_data(ui, "/MenuBar/Preset/Load", window);
-    add_action_data(ui, "/MenuBar/Help/About", window);
+    // Add actions
+    GSimpleActionGroup *action_group = g_simple_action_group_new();
+    gtk_widget_insert_action_group(window, "app", G_ACTION_GROUP(action_group));
 
-    g_object_unref(ui);
+    // Create and connect actions
+    GSimpleAction *quit_action = g_simple_action_new("quit", NULL);
+    g_signal_connect(quit_action, "activate", G_CALLBACK(action_quit_cb), window);
+    g_action_map_add_action(G_ACTION_MAP(action_group), G_ACTION(quit_action));
+
+    GSimpleAction *about_action = g_simple_action_new("about", NULL);
+    g_signal_connect(about_action, "activate", G_CALLBACK(action_show_about_dialog_cb), window);
+    g_action_map_add_action(G_ACTION_MAP(action_group), G_ACTION(about_action));
+
+    GSimpleAction *store_action = g_simple_action_new("store", NULL);
+    g_signal_connect(store_action, "activate", G_CALLBACK(action_store_cb), window);
+    g_action_map_add_action(G_ACTION_MAP(action_group), G_ACTION(store_action));
+
+    GSimpleAction *save_action = g_simple_action_new("save", NULL);
+    g_signal_connect(save_action, "activate", G_CALLBACK(action_save_preset_cb), window);
+    g_action_map_add_action(G_ACTION_MAP(action_group), G_ACTION(save_action));
+
+    GSimpleAction *load_action = g_simple_action_new("load", NULL);
+    g_signal_connect(load_action, "activate", G_CALLBACK(action_open_preset_cb), window);
+    g_action_map_add_action(G_ACTION_MAP(action_group), G_ACTION(load_action));
+
+    g_object_unref(action_group);
+    g_object_unref(builder);
 }
 
 static gint widget_tree_key_compare_func(gconstpointer a, gconstpointer b, gpointer data)
@@ -1546,7 +1514,8 @@ void gui_create(Device *device)
     window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
     gtk_window_set_title(GTK_WINDOW(window), "gdigi");
 
-    icon = gdk_pixbuf_new_from_inline(-1, gdigi_icon, FALSE, NULL);
+    icon = gdk_pixbuf_new_from_resource("/org/gtk/gdigi/data/icon.png", NULL);
+
     gtk_window_set_icon(GTK_WINDOW(window), icon);
 
     vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
@@ -1635,8 +1604,8 @@ gboolean unsupported_device_dialog(Device **device)
 
     dialog = gtk_dialog_new_with_buttons("Unsupported device",
                                          NULL, GTK_DIALOG_MODAL,
-                                         GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
-                                         GTK_STOCK_OK, GTK_RESPONSE_ACCEPT,
+                                         "_Cancel", GTK_RESPONSE_CANCEL,
+                                         "_Ok", GTK_RESPONSE_ACCEPT,
                                          NULL);
 
     vbox = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
@@ -1688,8 +1657,8 @@ gint select_device_dialog (GList *devices)
 
     dialog = gtk_dialog_new_with_buttons("Select Digitech device",
                                          NULL, GTK_DIALOG_MODAL,
-                                         GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
-                                         GTK_STOCK_OK, GTK_RESPONSE_ACCEPT,
+                                         "_Cancel", GTK_RESPONSE_CANCEL,
+                                         "_Ok", GTK_RESPONSE_ACCEPT,
                                          NULL);
 
     vbox = gtk_dialog_get_content_area(GTK_DIALOG(dialog));

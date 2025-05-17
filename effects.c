@@ -407,19 +407,19 @@ static EffectValues values_db_boost = {
 static EffectValues values_eq_bass_hz = {
     .min = 0.0, .max = 250.0,
     .type = VALUE_TYPE_SUFFIX | VALUE_TYPE_OFFSET,
-    .suffix = "hz", .offset = 50,
+    .suffix = "Hz", .offset = 50,
 };
 
 static EffectValues values_eq_mid_hz = {
     .min = 0.0, .max = 4700.0,
-    .type = VALUE_TYPE_OFFSET,
-    .offset = 300,
+    .type = VALUE_TYPE_SUFFIX | VALUE_TYPE_OFFSET,
+    .suffix = "Hz", .offset = 300,
 };
 
 static EffectValues values_eq_treb_hz = {
     .min = 0.0, .max = 7500.0,
-    .type = VALUE_TYPE_OFFSET,
-    .offset = 500,
+    .type = VALUE_TYPE_SUFFIX | VALUE_TYPE_OFFSET,
+    .suffix = "Hz", .offset = 500,
 };
 
 static EffectValues values_eq_bandwidth = {
@@ -3721,7 +3721,6 @@ static XmlLabel xml_amp_cab_labels[] = {
     {AMP_CAB_DIGI_CHUNK, "DigiTech\xc2\xae Chunk 4x12"},
     {AMP_CAB_DIGI_SPANK2_12, "DigiTech\xc2\xae Spank 2x12"},
     {AMP_CAB_DIGI_SPKR_COMP, "DigiTech\xc2\xae Spkr Comp"},
-
     {GNX_AMP_CAB_DIRECT, "Direct"},
     {GNX_AMP_CAB_TWEED1_8, "Tweed 1x8"},
     {GNX_AMP_CAB_TWEED1_12, "Tweed 1x12"},
@@ -4493,7 +4492,6 @@ XmlSettings xml_settings[] = {
     {VSWITCH_MIN, FOOTSWITCH_10_POSITION, "Footswitch 10 Min", &values_on_off, xml_on_off_labels, G_N_ELEMENTS(xml_on_off_labels)},
     {VSWITCH_MAX, FOOTSWITCH_10_POSITION, "Footswitch 10 Max", &values_on_off, xml_on_off_labels, G_N_ELEMENTS(xml_on_off_labels)},
 
-
     // Global settings, not part of presets or standard XML.
     {TUNING_REFERENCE, GLOBAL_POSITION, "Tuning Reference", &values_0_to_99,},
     {USB_AUDIO_PLAYBACK_MIX, GLOBAL_POSITION, "USB Audio Playback Mix", &values_0_to_99,},
@@ -4646,10 +4644,11 @@ static void modifier_group_free(ModifierGroup *modifier_group)
 
     int x;
     for (x=0; x<modifier_group->group_amt; x++) {
-        if (modifier_group->group[x].settings)
+        if (modifier_group->group[x].settings) {
             /* The settings for the EXP_POSITION are dynamically allocated. */
             modifier_settings_exp_free(modifier_group->group[x].settings);
             effect_settings_free(modifier_group->group[x].settings);
+        }
     }
     g_slice_free1(modifier_group->group_amt * sizeof(EffectGroup),
                   modifier_group->group);

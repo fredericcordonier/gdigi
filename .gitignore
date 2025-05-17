@@ -7,3 +7,7 @@ gdigi
 *.swp
 images/gdigi_icon.h
 core
+# VSCode files
+.vscode
+resources.c
+resources.h
