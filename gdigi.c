@@ -438,11 +438,8 @@ void push_message(GString *msg)
                 g_string_free(ipv, TRUE);
             }
 
-            GDK_THREADS_ENTER();
-            apply_setting_param_to_gui(param);
-            GDK_THREADS_LEAVE();
+            gdk_threads_add_timeout(0, (GSourceFunc)apply_setting_param_to_gui, param);
 
-            setting_param_free(param);
             g_string_free(msg, TRUE);
             return;
         }
@@ -454,9 +451,7 @@ void push_message(GString *msg)
             case NOTIFY_PRESET_MOVED:
                 if (str[11] == PRESETS_EDIT_BUFFER && str[12] == 0) {
 
-                    GDK_THREADS_ENTER();
-                    g_timeout_add(0, apply_current_preset_to_gui, NULL);
-                    GDK_THREADS_LEAVE();
+                    gdk_threads_add_timeout(0, apply_current_preset_to_gui, NULL);
                     debug_msg(DEBUG_MSG2HOST,
                               "RECEIVE_DEVICE_NOTIFICATION: Loaded preset "
                               "%d from bank %d",
@@ -520,11 +515,8 @@ void push_message(GString *msg)
                           param->id,
                           param->position, param->value, "XXX");
 
-                GDK_THREADS_ENTER();
-                apply_setting_param_to_gui(param);
-                GDK_THREADS_LEAVE();
+                gdk_threads_add_timeout(0, (GSourceFunc)apply_setting_param_to_gui, param);
 
-                setting_param_free(param);
             } while ( (x < msg->len) && n < tot);
 
             g_string_free(msg, TRUE);
@@ -549,13 +541,18 @@ void push_message(GString *msg)
 
             g_string_free(msg, TRUE);
 
-            GDK_THREADS_ENTER();
-
-            create_modifier_group(EXP_POSITION, EXP_ASSIGN1);
-            create_modifier_group(LFO1_POSITION, LFO_TYPE);
-            create_modifier_group(LFO2_POSITION, LFO_TYPE);
-
-            GDK_THREADS_LEAVE();
+            PosId *values = g_slice_new(PosId);
+            values->pos = EXP_POSITION;
+            values->id  = EXP_ASSIGN1;
+            gdk_threads_add_idle((GSourceFunc)create_modifier_group, values);
+            values = g_slice_new(PosId);
+            values->pos = LFO1_POSITION;
+            values->id  = LFO_TYPE;
+            gdk_threads_add_idle((GSourceFunc)create_modifier_group, values);
+            values = g_slice_new(PosId);
+            values->pos = LFO2_POSITION;
+            values->id  = LFO_TYPE;
+            gdk_threads_add_idle((GSourceFunc)create_modifier_group, values);
 
             return;
 
@@ -1480,9 +1477,6 @@ int main(int argc, char *argv[]) {
     static gboolean stop_read_thread = FALSE;
     GThread *read_thread = NULL;
 
-    g_thread_init(NULL);
-    gdk_threads_init();
-
     context = g_option_context_new(NULL);
     g_option_context_add_main_entries(context, options, NULL);
     g_option_context_add_group(context, gtk_get_option_group(TRUE));
@@ -1501,6 +1495,7 @@ int main(int argc, char *argv[]) {
         int    num_devices = 0;
         int    chosen_device = 0;
         if ((num_devices = get_digitech_devices(&devices)) <= 0) {
+            show_error_message(NULL, "Couldn't find DigiTech devices!");
             g_warning("Couldn't find DigiTech devices!");
             exit(EXIT_FAILURE);
         }
@@ -1526,11 +1521,12 @@ int main(int argc, char *argv[]) {
         show_error_message(NULL, "Failed to open MIDI device");
     } else {
         message_queue = g_queue_new();
-        message_queue_mutex = g_mutex_new();
-        message_queue_cond = g_cond_new();
-        read_thread = g_thread_create((GThreadFunc)read_data_thread,
-                                      &stop_read_thread,
-                                      TRUE, NULL);
+        message_queue_mutex = g_new(GMutex, 1);
+        g_mutex_init(message_queue_mutex);
+        message_queue_cond = g_new(GCond, 1);
+        g_cond_init(message_queue_cond);
+        read_thread = g_thread_new("read_midi_data", (GThreadFunc)read_data_thread,
+                                    &stop_read_thread);
 
         if (request_who_am_i(&device_id, &family_id, &product_id) == FALSE) {
             show_error_message(NULL, "No suitable reply from device");
@@ -1562,8 +1558,13 @@ int main(int argc, char *argv[]) {
         g_thread_join(read_thread);
     }
 
+    if (message_queue_cond != NULL) {
+        g_cond_clear(message_queue_cond);
+        g_free(message_queue_cond);
+    }
     if (message_queue_mutex != NULL) {
-        g_mutex_free(message_queue_mutex);
+        g_mutex_clear(message_queue_mutex);
+        g_free(message_queue_mutex);
     }
 
     if (message_queue != NULL && g_queue_get_length(message_queue)) {

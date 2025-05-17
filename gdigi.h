@@ -1130,6 +1130,11 @@ typedef struct {
     GString *data;
 } SettingGenetx;
 
+typedef struct {
+    guint pos;
+    guint id;
+} PosId;
+
 void send_message(gint procedure, gchar *data, gint len);
 MessageID get_message_id(GString *msg);
 void append_value(GString *msg, guint value);

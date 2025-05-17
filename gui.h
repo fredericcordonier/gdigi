@@ -19,18 +19,20 @@
 
 #include <gtk/gtk.h>
 #include <glib.h>
+#include "gdigi.h"
 #include "effects.h"
+#include "preset.h"
 
 gchar * get_preset_filename(int prod_id);
 void show_error_message(GtkWidget *parent, gchar *message);
-void apply_setting_param_to_gui(SettingParam *param);
+gboolean apply_setting_param_to_gui(SettingParam *param);
 gboolean apply_current_preset_to_gui(gpointer data);
 void gui_create(Device *device);
 void gui_free();
 gboolean unsupported_device_dialog(Device **device);
 gint select_device_dialog (GList *devices);
 const gchar* get_message_name(MessageID msgid);
-void create_modifier_group (guint pos, guint id);
+void create_modifier_group (PosId *pos_id);
 void modifier_settings_exp_free(EffectSettings *settings);
 
 #endif /* GDIGI_GUI_H */
