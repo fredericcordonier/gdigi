@@ -300,6 +300,30 @@ static gchar *delay_mult_labels[] = {
     NULL,
 };
 
+static gchar *cmpr_crossover_freq_labels[] = {
+    " 50Hz ",
+    " 63Hz ",
+    " 80Hz ",
+    "100Hz ",
+    "125Hz ",
+    "160Hz",
+    "200Hz",
+    "250Hz",
+    "315Hz",
+    "400Hz",
+    "500Hz",
+    "630Hz",
+    "800Hz",
+    "1000Hz",
+    "1250Hz",
+    "1600Hz",
+    "2000Hz",
+    "2500Hz",
+    "3150Hz",
+    "FULLRNG",
+    NULL,
+};
+
 static EffectValues values_1_2_warp = {
     .min = 0.0, .max = 2.0,
     .type = VALUE_TYPE_LABEL,
@@ -739,6 +763,19 @@ static EffectValues values_rp_mix = {
     /** \todo make this display properly (USB 0, USB 1, USB 2 ... USB 49, USB RP, RP 49, RP 48 ...  RP 1, RP 0) */
     .min = 0.0, .max = 100.0, .type = VALUE_TYPE_PLAIN,
 };
+
+static EffectValues values_1_to_10 = {
+    .min = 0.0, .max = 9.0,
+    .type = VALUE_TYPE_OFFSET,
+    .offset = 1,
+};
+
+static EffectValues values_cmpr_crossover_freq = {
+    .min = 0.0, .max = 19.0,
+    .type = VALUE_TYPE_LABEL,
+    .labels = cmpr_crossover_freq_labels,
+};
+
 
 static EffectSettings global_settings[] = {
     {"USB/RP Mix", USB_AUDIO_PLAYBACK_MIX, GLOBAL_POSITION, &values_rp_mix},
@@ -1628,6 +1665,76 @@ static EffectSettings tone_lib_level_b_settings[] = {
     {"Tone Level 1", FX_LIB_LEVEL_MAX1, LIB_POSITION_B, &values_0_to_99},
     {"Tone Level 2", FX_LIB_LEVEL_MAX2, LIB_POSITION_B, &values_0_to_99},
     {"Tone Level 3", FX_LIB_LEVEL_MAX3, LIB_POSITION_B, &values_0_to_99},
+};
+
+static EffectSettings bp_comp_digi_settings[] = {
+    {"Sustain", COMP_SUSTAIN, COMP_POSITION, &values_0_to_99},
+    {"Tone", COMP_TONE, COMP_POSITION, &values_0_to_99},
+    {"Attack", COMP_ATTACK, COMP_POSITION, &values_0_to_99},
+    {"Crossover", BP_COMP_CROSSOVER, COMP_POSITION, &values_cmpr_crossover_freq},
+    {"Level", COMP_LEVEL, COMP_POSITION, &values_0_to_99},
+};
+
+static EffectSettings bp_comp_cs_settings[] = {
+    {"Sustain", COMP_SUSTAIN, COMP_POSITION, &values_0_to_99},
+    {"Attack", COMP_ATTACK, COMP_POSITION, &values_0_to_99},
+    {"Level", COMP_LEVEL, COMP_POSITION, &values_0_to_99},
+};
+
+static EffectSettings bp_comp_dyna_settings[] = {
+    {"Sensitivity", COMP_SENSITIVITY, COMP_POSITION, &values_0_to_99},
+    {"Output", COMP_OUTPUT, COMP_POSITION, &values_0_to_99},
+};
+
+static EffectSettings fretless_settings[] = {
+    {"Amount", WAH_FRETLESS_AMOUNT, WAH_POSITION, &values_1_to_10},
+    {"Level", PRESET_LEVEL, PRESET_POSITION, &values_0_to_99},
+};
+
+static EffectSettings bp355_wah_settings[] = {
+    {"Min", WAH_MIN, WAH_POSITION_MIN_MAX, &values_0_to_99},
+    {"Max", WAH_MAX, WAH_POSITION_MIN_MAX, &values_0_to_99},
+    {"Level", WAH_VOLUME_BOOST, WAH_POSITION, &values_db_boost},
+};
+
+static EffectSettings bp355_amp_settings_A[] = {
+    {"Gain", AMP_GAIN, AMP_A_POSITION, &values_0_to_99},
+    {"Level", AMP_LEVEL, AMP_A_POSITION, &values_0_to_99},
+};
+
+static EffectSettings bp355_amp_settings2_A[] = {
+    {"Level", AMP_LEVEL, AMP_A_POSITION, &values_0_to_99},
+};
+static EffectSettings bp355_amp_settings_B[] = {
+    {"Gain", AMP_GAIN, AMP_B_POSITION, &values_0_to_99},
+    {"Level", AMP_LEVEL, AMP_B_POSITION, &values_0_to_99},
+};
+
+static EffectSettings bp355_amp_settings2_B[] = {
+    {"Level", AMP_LEVEL, AMP_B_POSITION, &values_0_to_99},
+};
+
+static EffectSettings bp355_eq_settings_A[] = {
+    {"Bass", EQ_BASS, EQ_A_POSITION, &values_eq_db},
+    {"Mid Hz", EQ_MID_FREQ, EQ_A_POSITION, &values_eq_mid_hz},
+    {"Mid", EQ_MID, EQ_A_POSITION, &values_eq_db},
+    {"Treble", EQ_TREB, EQ_A_POSITION, &values_eq_db},
+    {"Presence", EQ_PRESENCE, EQ_A_POSITION, &values_eq_db},
+    {"Treb Hz", EQ_TREB_FREQ, EQ_A_POSITION, &values_eq_treb_hz},
+};
+static EffectSettings bp355_eq_settings_B[] = {
+    {"Bass", EQ_BASS, EQ_B_POSITION, &values_eq_db},
+    {"Mid Hz", EQ_MID_FREQ, EQ_B_POSITION, &values_eq_mid_hz},
+    {"Mid", EQ_MID, EQ_B_POSITION, &values_eq_db},
+    {"Treble", EQ_TREB, EQ_B_POSITION, &values_eq_db},
+    {"Presence", EQ_PRESENCE, EQ_B_POSITION, &values_eq_db},
+    {"Treb Hz", EQ_TREB_FREQ, EQ_B_POSITION, &values_eq_treb_hz},
+};
+
+static EffectSettings bp355_misc_settings[] = {
+    {"Preset Level", PRESET_LEVEL, PRESET_POSITION, &values_0_to_99},
+    {"Vol Pre FX",   PRESET_LEVEL, VOLUME_PRE_FX_POSITION, &values_0_to_99},
+    {"Vol Post FX",  PRESET_LEVEL, VOLUME_POST_FX_POSITION, &values_0_to_99},
 };
 
 static EffectGroup gnx3k_wah_group[] = {
@@ -2784,6 +2891,186 @@ static EffectGroup delay_mult_group[] = {
     {DELAY_HALF, "Half", NULL, -1},
 };
 
+static EffectGroup bp355_wah_group[] = {
+    {WAH_FRETLESS_1, "Fretless 1", fretless_settings, G_N_ELEMENTS(fretless_settings)},
+    {WAH_FRETLESS_2, "Fretless 2", fretless_settings, G_N_ELEMENTS(fretless_settings)},
+    {WAH_FRETLESS_3, "Fretless 3", fretless_settings, G_N_ELEMENTS(fretless_settings)},
+    {WAH_TYPE_CRY, "Cry Wah", bp355_wah_settings, G_N_ELEMENTS(bp355_wah_settings)},
+    {WAH_TYPE_FULLRANGE, "Fullrange Wah", bp355_wah_settings, G_N_ELEMENTS(bp355_wah_settings)},
+    {WAH_TYPE_CLYDE, "Clyde Wah", bp355_wah_settings, G_N_ELEMENTS(bp355_wah_settings)},
+};
+
+static EffectGroup bp355_comp_group[] = {
+    {COMP_TYPE_DIGI, "Digitech compressor", bp_comp_digi_settings, G_N_ELEMENTS(bp_comp_digi_settings)},
+    {COMP_TYPE_CS, "CS compressor", bp_comp_cs_settings, G_N_ELEMENTS(bp_comp_cs_settings)},
+    {COMP_TYPE_DYNA, "Dyna comp", bp_comp_dyna_settings, G_N_ELEMENTS(bp_comp_dyna_settings)},
+};
+
+static EffectGroup bp355_reverb_group[] = {
+    {REVERB_TYPE_LEX_AMBIENCE, "Lexicon ambience", reverb_lex_settings, G_N_ELEMENTS(reverb_lex_settings)},
+    {REVERB_TYPE_LEX_STUDIO, "Lexicon studio", reverb_lex_settings, G_N_ELEMENTS(reverb_lex_settings)},
+    {REVERB_TYPE_LEX_ROOM, "Lexicon room", reverb_lex_settings, G_N_ELEMENTS(reverb_lex_settings)},
+    {REVERB_TYPE_LEX_HALL, "Lexicon hall", reverb_lex_settings, G_N_ELEMENTS(reverb_lex_settings)},
+    {REVERB_TYPE_EMT240_PLATE, "EMT240 Plate", reverb_lex_settings, G_N_ELEMENTS(reverb_lex_settings)},
+};
+
+static EffectGroup bp355_amp_select_group[] = {
+    {AMP_CHANNEL_A, "A", NULL, -1},
+    {AMP_CHANNEL_B, "B", NULL, -1},
+};
+
+static EffectGroup bp355_amp_group_A[] = {
+    {AMP_TYPE_BP_RCKSVT, "Ampeg SVT", bp355_amp_settings_A, G_N_ELEMENTS(bp355_amp_settings_A)},
+    {AMP_TYPE_BP_ASHDWN, "Ashdown Bass", bp355_amp_settings_A, G_N_ELEMENTS(bp355_amp_settings_A)},
+    {AMP_TYPE_BP_BASSMN, "Fender Bassman", bp355_amp_settings_A, G_N_ELEMENTS(bp355_amp_settings_A)},
+    {AMP_TYPE_BP_SOLAR, "Sunn 200S", bp355_amp_settings_A, G_N_ELEMENTS(bp355_amp_settings_A)},
+    {AMP_TYPE_BP_STELAR, "SWR Interstellar Overdrive", bp355_amp_settings_A, G_N_ELEMENTS(bp355_amp_settings_A)},
+    {AMP_TYPE_BP_COMNDO, "TraceElliot Commando", bp355_amp_settings_A, G_N_ELEMENTS(bp355_amp_settings_A)},
+    {AMP_TYPE_BP_BOMBER, "Ampeg B15", bp355_amp_settings_A, G_N_ELEMENTS(bp355_amp_settings_A)},
+    {AMP_TYPE_BP_HIWTAG, "Hiwatt Custom 50", bp355_amp_settings_A, G_N_ELEMENTS(bp355_amp_settings_A)},
+    {AMP_TYPE_BP_BOOGIE, "MesaBoogie 400+", bp355_amp_settings_A, G_N_ELEMENTS(bp355_amp_settings_A)},
+    {AMP_TYPE_BP_BASIC, "SVVR Basic Black", bp355_amp_settings_A, G_N_ELEMENTS(bp355_amp_settings_A)},
+    {AMP_TYPE_BP_DUALSH, "Dual Showman", bp355_amp_settings_A, G_N_ELEMENTS(bp355_amp_settings_A)},
+    {AMP_TYPE_BP_DEMTER, "Demeter VTBP-201S", bp355_amp_settings_A, G_N_ELEMENTS(bp355_amp_settings_A)},
+    {AMP_TYPE_BP_TWEED_DELUXE, "'57 Fender Delux", bp355_amp_settings_A, G_N_ELEMENTS(bp355_amp_settings_A)},
+    {AMP_TYPE_BP_BLACKFACE_TWIN, "'65 Fender Blackface Reverb", bp355_amp_settings_A, G_N_ELEMENTS(bp355_amp_settings_A)},
+    {AMP_TYPE_BP_MASTER_VOLUME, "'77 Marshall Master", bp355_amp_settings_A, G_N_ELEMENTS(bp355_amp_settings_A)},
+    {AMP_TYPE_BP_AC30TB, "Vox AC30 TopBoost", bp355_amp_settings_A, G_N_ELEMENTS(bp355_amp_settings_A)},
+    {AMP_TYPE_BP_DUAL_RECTIFIER, "MesaBoogie Dual Rectifier", bp355_amp_settings_A, G_N_ELEMENTS(bp355_amp_settings_A)},
+    {AMP_TYPE_BP_SOLO, "Digitech Solo", bp355_amp_settings_A, G_N_ELEMENTS(bp355_amp_settings_A)},
+    {AMP_TYPE_BP_DIGITECH_CLEAN, "Digitech Clean Tube", bp355_amp_settings_A, G_N_ELEMENTS(bp355_amp_settings_A)},
+    {AMP_TYPE_BP_HIGH_GAIN, "Digitech High Gain", bp355_amp_settings_A, G_N_ELEMENTS(bp355_amp_settings_A)},
+    {AMP_TYPE_DIRECT, "Direct", bp355_amp_settings2_A, G_N_ELEMENTS(bp355_amp_settings2_A)},
+};
+static EffectGroup bp355_amp_group_B[] = {
+    {AMP_TYPE_BP_RCKSVT, "Ampeg SVT", bp355_amp_settings_B, G_N_ELEMENTS(bp355_amp_settings_B)},
+    {AMP_TYPE_BP_ASHDWN, "Ashdown Bass", bp355_amp_settings_B, G_N_ELEMENTS(bp355_amp_settings_B)},
+    {AMP_TYPE_BP_BASSMN, "Fender Bassman", bp355_amp_settings_B, G_N_ELEMENTS(bp355_amp_settings_B)},
+    {AMP_TYPE_BP_SOLAR, "Sunn 200S", bp355_amp_settings_B, G_N_ELEMENTS(bp355_amp_settings_B)},
+    {AMP_TYPE_BP_STELAR, "SWR Interstellar Overdrive", bp355_amp_settings_B, G_N_ELEMENTS(bp355_amp_settings_B)},
+    {AMP_TYPE_BP_COMNDO, "TraceElliot Commando", bp355_amp_settings_B, G_N_ELEMENTS(bp355_amp_settings_B)},
+    {AMP_TYPE_BP_BOMBER, "Ampeg B15", bp355_amp_settings_B, G_N_ELEMENTS(bp355_amp_settings_B)},
+    {AMP_TYPE_BP_HIWTAG, "Hiwatt Custom 50", bp355_amp_settings_B, G_N_ELEMENTS(bp355_amp_settings_B)},
+    {AMP_TYPE_BP_BOOGIE, "MesaBoogie 400+", bp355_amp_settings_B, G_N_ELEMENTS(bp355_amp_settings_B)},
+    {AMP_TYPE_BP_BASIC, "SVVR Basic Black", bp355_amp_settings_B, G_N_ELEMENTS(bp355_amp_settings_B)},
+    {AMP_TYPE_BP_DUALSH, "Dual Showman", bp355_amp_settings_B, G_N_ELEMENTS(bp355_amp_settings_B)},
+    {AMP_TYPE_BP_DEMTER, "Demeter VTBP-201S", bp355_amp_settings_B, G_N_ELEMENTS(bp355_amp_settings_B)},
+    {AMP_TYPE_BP_TWEED_DELUXE, "'57 Fender Delux'", bp355_amp_settings_B, G_N_ELEMENTS(bp355_amp_settings_B)},
+    {AMP_TYPE_BP_BLACKFACE_TWIN, "'65 Fender Blackface Reverb'", bp355_amp_settings_B, G_N_ELEMENTS(bp355_amp_settings_B)},
+    {AMP_TYPE_BP_MASTER_VOLUME, "'77 Marshall Master'", bp355_amp_settings_B, G_N_ELEMENTS(bp355_amp_settings_B)},
+    {AMP_TYPE_BP_AC30TB, "Vox AC30 TopBoost", bp355_amp_settings_B, G_N_ELEMENTS(bp355_amp_settings_B)},
+    {AMP_TYPE_BP_DUAL_RECTIFIER, "MesaBoogie Dual Rectifier", bp355_amp_settings_B, G_N_ELEMENTS(bp355_amp_settings_B)},
+    {AMP_TYPE_BP_SOLO, "Digitech Solo", bp355_amp_settings_B, G_N_ELEMENTS(bp355_amp_settings_B)},
+    {AMP_TYPE_BP_DIGITECH_CLEAN, "Digitech Clean Tube", bp355_amp_settings_B, G_N_ELEMENTS(bp355_amp_settings_B)},
+    {AMP_TYPE_BP_HIGH_GAIN, "Digitech High Gain", bp355_amp_settings_B, G_N_ELEMENTS(bp355_amp_settings_B)},
+    {AMP_TYPE_DIRECT, "Direct", bp355_amp_settings2_B, G_N_ELEMENTS(bp355_amp_settings2_B)},
+};
+static EffectGroup bp355_amp_cab_group[] = {
+    {AMP_CAB_AC1X18, "Acoustic 1x18", NULL, -1},
+    {AMP_CAB_AM1X15, "Ampeg 1x15", NULL, -1},
+    {AMP_CAB_SW1X15, "SWR 1x15", NULL, -1},
+    {AMP_CAB_SU2X15, "Sunn 2x15", NULL, -1},
+    {AMP_CAB_ED4X10, "Eden 4x10", NULL, -1},
+    {AMP_CAB_BASSMAN, "Bassman 4x10", NULL, -1},
+    {AMP_CAB_HW4X12, "Hiwatt 4x12", NULL, -1},
+    {AMP_CAB_AM8X10, "Ampeg 8x10", NULL, -1},
+    {AMP_CAB_DELUXE, "Deluxe 1x12", NULL, -1},
+    {AMP_CAB_TW2X12, "Dual Showman 2x12", NULL, -1},
+    {AMP_CAB_VX2X12, "Vox AC30 2x12", NULL, -1},
+    {AMP_CAB_MA4X12, "Marshall 1969", NULL, -1},
+    {AMP_CAB_VINTAGE, "Vintage V30 4x12", NULL, -1},
+    {AMP_CAB_DIRECT, "Direct", NULL, -1},
+};
+
+/* LIBRARY_TONE, LIBRARY_POSITION */
+static EffectGroup bp355_tone_lib_group[] = {
+    //{TONE_LIB_CUSTOM, "None", NULL, -1},
+    {TONE_LIB_BP_ROCK1 , "Rock 1", NULL, -1},
+    {TONE_LIB_BP_ROCK2 , "Rock 2", NULL, -1},
+    {TONE_LIB_BP_SLAP1 , "Slap 1", NULL, -1},
+    {TONE_LIB_BP_SLAP2 , "Slap 2", NULL, -1},
+    {TONE_LIB_BP_CMPRSD, "Compressed", NULL, -1},
+    {TONE_LIB_BP_FUNK  , "Funk", NULL, -1},
+    {TONE_LIB_BP_CLEAN , "Clean", NULL, -1},
+    {TONE_LIB_BP_DRIVE , "Drive", NULL, -1},
+    {TONE_LIB_BP_METAL , "Metal", NULL, -1},
+    {TONE_LIB_BP_WARM  , "Warm", NULL, -1},
+    {TONE_LIB_BP_BRIGHT, "Bright", NULL, -1},
+    {TONE_LIB_BP_HEAVY , "Heavy", NULL, -1},
+    {TONE_LIB_BP_CLNWAH, "Clean Wah", NULL, -1},
+    {TONE_LIB_BP_BRTCLS, "British Classic", NULL, -1},
+    {TONE_LIB_BP_BRTMOD, "British Modern", NULL, -1},
+    {TONE_LIB_BP_SINSTR, "Sinister", NULL, -1},
+    {TONE_LIB_BP_PUNCHY, "Punchy", NULL, -1},
+    {TONE_LIB_BP_FINGER, "Fingerstyle", NULL, -1},
+    {TONE_LIB_BP_MIDBST, "Mid Boost", NULL, -1},
+    {TONE_LIB_BP_BIGBTM, "Big Bottom", NULL, -1},
+    {TONE_LIB_BP_PICK  , "Pick Style", NULL, -1},
+    {TONE_LIB_BP_GROOVE, "Groove", NULL, -1},
+    {TONE_LIB_BP_SOLO  , "Solo Bass", NULL, -1},
+    {TONE_LIB_BP_HONKY , "Honky", NULL, -1},
+    {TONE_LIB_BP_SUSTAN, "Sustain", NULL, -1},
+    {TONE_LIB_BP_DRTWAH, "Dirty Wah", NULL, -1},
+    {TONE_LIB_BP_GRIND , "Gring", NULL, -1},
+    {TONE_LIB_BP_SMOOTH, "Smooth", NULL, -1},
+    {TONE_LIB_BP_MOTOWN, "Motown", NULL, -1},
+    {TONE_LIB_BP_VINTAG, "Vintage", NULL, -1},
+};
+
+static EffectGroup bp355_effects_lib_group[] = {
+    {EFFECTS_LIB_CHORUS             , "Chorus", NULL, -1},
+    {EFFECTS_LIB_PHASER             , "Phaser", NULL, -1},
+    {EFFECTS_LIB_FLANGER            , "Flanger", NULL, -1},
+    {EFFECTS_LIB_PITCH              , "Pitch", NULL, -1},
+    {EFFECTS_LIB_TREMOLO            , "Tremolo", NULL, -1},
+    {EFFECTS_LIB_OCTAVER            , "Octaver", NULL, -1},
+    {EFFECTS_LIB_ENVELOPE           , "Envelope", NULL, -1},
+    {EFFECTS_LIB_DIGITAL            , "Digital Delay", NULL, -1},
+    {EFFECTS_LIB_ANALOG             , "Analog Delay", NULL, -1},
+    {EFFECTS_LIB_PONG               , "Pong Delay", NULL, -1},
+    {EFFECTS_LIB_MOD                , "Mod Delay", NULL, -1},
+    {EFFECTS_LIB_TAPE               , "Tape Delay", NULL, -1},
+    {EFFECTS_LIB_HALL               , "Hall Reverb", NULL, -1},
+    {EFFECTS_LIB_PLATE              , "Plate Reverb", NULL, -1},
+    {EFFECTS_LIB_AMBIENCE           , "Ambience", NULL, -1},
+    {EFFECTS_LIB_CHORUS_DIGITAL     , "Chorus + Dig Del", NULL, -1},
+    {EFFECTS_LIB_CHORUS_DELAY_REVERB, "Chorus + Del + Rev", NULL, -1},
+    {EFFECTS_LIB_FLANGER_ANALOG     , "Flanger + An Del", NULL, -1},
+    {EFFECTS_LIB_PHASER_TAPE        , "Phaser + Tape Del", NULL, -1},
+    {EFFECTS_LIB_PHASER_MOD         , "Phaser + Mod Del", NULL, -1},
+    {EFFECTS_LIB_PHASER_ROOM        , "Phaser + Room Rev", NULL, -1},
+    {EFFECTS_LIB_DIGITAL_HALL       , "Dig Del + Hall Rev", NULL, -1},
+    {EFFECTS_LIB_PITCH_PLATE        , "Pitch + Plate", NULL, -1},
+    {EFFECTS_LIB_CHORUS_HALL        , "Chorus + Hall Rev", NULL, -1},
+    {EFFECTS_LIB_PONG_HALL          , "Pong Del + Hall Rev", NULL, -1},
+    {EFFECTS_LIB_MOD_ROOM           , "Mod Del + Room", NULL, -1},
+    {EFFECTS_LIB_TREMOLO_TAPE       , "Tremolo + Tape Del", NULL, -1},
+    {EFFECTS_LIB_PITCH_DIGITAL      , "Pitch + Dig Del", NULL, -1},
+    {EFFECTS_LIB_MOD_PLATE          , "Mod Del + Plate Rev", NULL, -1},
+    {EFFECTS_LIB_OCTAVER_TAPE       , "Octaver + Tape Del", NULL, -1},
+};
+
+static EffectGroup bp355_eq_group_A[] = {
+    {EQ_TYPE_BRIGHT, "Bright", bp355_eq_settings_A, G_N_ELEMENTS(bp355_eq_settings_A)},
+    {EQ_TYPE_MIDBOOST, "Mid Boost", bp355_eq_settings_A, G_N_ELEMENTS(bp355_eq_settings_A)},
+    {EQ_TYPE_SCOOP, "Scoop", bp355_eq_settings_A, G_N_ELEMENTS(bp355_eq_settings_A)},
+    {EQ_TYPE_WARM, "Warm", bp355_eq_settings_A, G_N_ELEMENTS(bp355_eq_settings_A)},
+};
+static EffectGroup bp355_eq_group_B[] = {
+    {EQ_TYPE_BRIGHT, "Bright", bp355_eq_settings_B, G_N_ELEMENTS(bp355_eq_settings_B)},
+    {EQ_TYPE_MIDBOOST, "Mid Boost", bp355_eq_settings_B, G_N_ELEMENTS(bp355_eq_settings_B)},
+    {EQ_TYPE_SCOOP, "Scoop", bp355_eq_settings_B, G_N_ELEMENTS(bp355_eq_settings_B)},
+    {EQ_TYPE_WARM, "Warm", bp355_eq_settings_B, G_N_ELEMENTS(bp355_eq_settings_B)},
+};
+
+static EffectGroup bp355_misc_group[] = {
+    {-1, NULL, bp355_misc_settings, G_N_ELEMENTS(bp355_misc_settings)},
+};
+
+static EffectGroup bp355_expression_pedal_assign_group[] = {
+    { 0, "None", NULL, 0},
+};
+
 static Effect gnx3k_wah_effect[] = {
     {NULL, WAH_ON_OFF, WAH_TYPE, WAH_POSITION, gnx3k_wah_group, G_N_ELEMENTS(gnx3k_wah_group)},
 };
@@ -3040,6 +3327,53 @@ static Effect tone_lib_effect_b[] = {
     {NULL, -1, FX_LIB_LEVEL, LIB_POSITION_B, tone_lib_level_b_group, G_N_ELEMENTS(tone_lib_level_b_group)},
 };
 
+static Effect bp355_wah_effect[] = {
+    {NULL, WAH_ON_OFF, WAH_TYPE, WAH_POSITION, bp355_wah_group, G_N_ELEMENTS(bp355_wah_group)},
+};
+
+static Effect bp355_reverb_effect[] = {
+    {NULL, REVERB_ON_OFF, REVERB_TYPE, REVERB_POSITION, bp355_reverb_group, G_N_ELEMENTS(bp355_reverb_group)},
+};
+
+static Effect bp355_select_amp_effect[] = {
+    {"Select Amp", -1, AMP_CHANNEL, AMP_CHANNEL_POSITION, bp355_amp_select_group, G_N_ELEMENTS(bp355_amp_select_group)},
+};
+
+static Effect bp355_amp_effect_A[] = {
+    {NULL, AMP_ON_OFF, AMP_TYPE, AMP_A_POSITION, bp355_amp_group_A, G_N_ELEMENTS(bp355_amp_group_A)},
+    {"Cabinet", -1, AMP_CAB_TYPE, AMP_CAB_POSITION, bp355_amp_cab_group, G_N_ELEMENTS(bp355_amp_cab_group)},
+};
+
+static Effect bp355_amp_effect_B[] = {
+    {NULL, AMP_ON_OFF, AMP_TYPE, AMP_B_POSITION, bp355_amp_group_B, G_N_ELEMENTS(bp355_amp_group_B)},
+    {"Cabinet", -1, AMP_CAB_TYPE, AMP_CAB_B_POSITION, bp355_amp_cab_group, G_N_ELEMENTS(bp355_amp_cab_group)},
+};
+
+static Effect bp355_tone_lib_effect[] = {
+    {NULL, -1, TONE_LIB_TYPE, LIB_POSITION_A, bp355_tone_lib_group, G_N_ELEMENTS(bp355_tone_lib_group)},
+    {NULL, -1, FX_LIB_TYPE, LIB_POSITION_A, bp355_effects_lib_group, G_N_ELEMENTS(bp355_effects_lib_group)},
+    //{NULL, -1, FX_LIB_LEVEL, LIB_POSITION_A, tone_lib_level_a_group, G_N_ELEMENTS(tone_lib_level_a_group)},
+};
+
+static Effect bp355_comp_effect[] = {
+    {NULL, COMP_ON_OFF, COMP_TYPE, COMP_POSITION, bp355_comp_group, G_N_ELEMENTS(bp355_comp_group)},
+};
+
+static Effect bp355_eq_effect_A[] = {
+    {NULL, EQ_ENABLE, EQ_TYPE, EQ_A_POSITION, bp355_eq_group_A, G_N_ELEMENTS(bp355_eq_group_A)},
+};
+static Effect bp355_eq_effect_B[] = {
+    {NULL, EQ_ENABLE, EQ_TYPE, EQ_B_POSITION, bp355_eq_group_B, G_N_ELEMENTS(bp355_eq_group_B)},
+};
+
+static Effect bp355_pickup_misc_effect[] = {
+    {NULL, -1, PRESET_LEVEL, PRESET_POSITION,  bp355_misc_group, G_N_ELEMENTS(bp355_misc_group)},
+};
+
+static Effect bp355_expression_pedal_assign_effect[] = {
+    {NULL, -1, EXP_TYPE, EXP_POSITION, bp355_expression_pedal_assign_group, G_N_ELEMENTS(bp355_expression_pedal_assign_group)},
+};
+
 /* in signal chain order */
 static EffectList rp150_effects[] = {
     {"Pickup", pickup_misc_effect, G_N_ELEMENTS(pickup_misc_effect)},
@@ -3175,6 +3509,27 @@ static EffectList gnx3000_genetx[] = {
     {"Amp Channel", gnx3k_amp_channel_effect, G_N_ELEMENTS(gnx3k_amp_channel_effect)},
 };
 
+static EffectList bp355_effects[] = {
+    {"Wah", bp355_wah_effect, G_N_ELEMENTS(bp355_wah_effect)},
+    {"Compressor", bp355_comp_effect, G_N_ELEMENTS(bp355_comp_effect)},
+    {"Distortion", rp355_dist_effect, G_N_ELEMENTS(rp355_dist_effect)},
+    {"Select Amp", bp355_select_amp_effect, G_N_ELEMENTS(bp355_select_amp_effect)},
+    {"Amplifier A", bp355_amp_effect_A, G_N_ELEMENTS(bp355_amp_effect_A)},
+    {"Equalizer A", bp355_eq_effect_A, G_N_ELEMENTS(bp355_eq_effect_A)},
+    {"Amplifier B", bp355_amp_effect_B, G_N_ELEMENTS(bp355_amp_effect_B)},
+    {"Equalizer B", bp355_eq_effect_B, G_N_ELEMENTS(bp355_eq_effect_B)},
+    {"Noisegate", noisegate_effect, G_N_ELEMENTS(noisegate_effect)},
+    {"Chorus/FX", rp355_chorusfx_effect, G_N_ELEMENTS(rp355_chorusfx_effect)},
+    {"Delay", rp355_delay_effect, G_N_ELEMENTS(rp355_delay_effect)},
+    {"Reverb", bp355_reverb_effect, G_N_ELEMENTS(bp355_reverb_effect)},
+    {"Pedal1 Assign", bp355_expression_pedal_assign_effect, G_N_ELEMENTS(bp355_expression_pedal_assign_effect)},
+    {"LFO1", rp355_lfo1_effect, G_N_ELEMENTS(rp355_lfo1_effect)},
+    {"LFO2", rp355_lfo2_effect, G_N_ELEMENTS(rp355_lfo2_effect)},
+    {"Volume", bp355_pickup_misc_effect, G_N_ELEMENTS(bp355_pickup_misc_effect)},
+    {"Global Settings", global_effect, G_N_ELEMENTS(global_effect)},
+    {"Tone Library", bp355_tone_lib_effect, G_N_ELEMENTS(bp355_tone_lib_effect)},
+};
+
 static Banks rp_banks[] = {
     {"User Presets", PRESETS_USER},
     {"System Presets", PRESETS_SYSTEM},
@@ -3190,6 +3545,11 @@ static Banks gnx3k_banks[] = {
     {"User Presets", PRESETS_USER},
     {"Factory 1", PRESETS_SYSTEM},
     {"Factory 2", PRESETS_FACTORY2},
+};
+
+static Banks bp_banks[] = {
+    {"User Presets", PRESETS_USER},
+    {"System Presets", PRESETS_SYSTEM},
 };
 
 static EffectPage rp150_pages[] = {
@@ -3227,6 +3587,10 @@ static EffectPage gnx4_pages[] = {
 static EffectPage gnx3000_pages[] = {
     {"Effects", gnx3000_effects, G_N_ELEMENTS(gnx3000_effects), 2},
     {"Amp/GeNetX", gnx3000_genetx, G_N_ELEMENTS(gnx3000_genetx), 1},
+};
+
+static EffectPage bp355_pages[] = {
+    {"Effects", bp355_effects, G_N_ELEMENTS(bp355_effects), 3},
 };
 
 static Device rp150 = {
@@ -3319,6 +3683,16 @@ static Device gnx3000 = {
     .n_banks = G_N_ELEMENTS(gnx3k_banks),
 };
 
+static Device bp355 = {
+    .name = "DigiTech BP355",
+    .family_id = 0x5E,
+    .product_id = 0x0a,
+    .pages = bp355_pages,
+    .n_pages = G_N_ELEMENTS(bp355_pages),
+    .banks = bp_banks,
+    .n_banks = G_N_ELEMENTS(bp_banks),
+};
+
 Device* supported_devices[] = {
     &rp150,
     &rp155,
@@ -3329,6 +3703,7 @@ Device* supported_devices[] = {
     &rp1000,
     &gnx4,
     &gnx3000,
+    &bp355,
 };
 
 int n_supported_devices = G_N_ELEMENTS(supported_devices);
@@ -3354,6 +3729,7 @@ static Modifier modifiers[] = {
     {"Compressor Level", COMP_LEVEL, COMP_POSITION, &values_0_to_99},
     {"Compressor Attack", COMP_ATTACK, COMP_POSITION, &values_0_to_99},
     {"Compressor Sensitivity", COMP_SENSITIVITY, COMP_POSITION, &values_0_to_99},
+    {"Compressor Crossover", BP_COMP_CROSSOVER, COMP_POSITION, &values_cmpr_crossover_freq},
     {"Compressor Output", COMP_OUTPUT, COMP_POSITION, &values_0_to_99},
     {"Dist Enable", DIST_ON_OFF, DIST_POSITION, &values_on_off},
     {"Dist Drive", DIST_SCREAMER_DRIVE, DIST_POSITION, &values_0_to_99},
@@ -3591,6 +3967,28 @@ static XmlLabel xml_on_off_labels[] = {
     {0, "Off"},
     {1, "On"},
 };
+static XmlLabel xml_cmpr_crossover_freq_labels[] = {
+    {0, " 50 "},
+    {1, " 63 "},
+    {2, " 80 "},
+    {3, "100 "},
+    {4, "125 "},
+    {5, "160 "},
+    {6, "200 "},
+    {7, "250 "},
+    {8, "315 "},
+    {9, "400 "},
+    {10, "500 "},
+    {11, "630 "},
+    {12, "800 "},
+    {13, "1000"},
+    {14, "1250"},
+    {15, "1600"},
+    {16, "2000"},
+    {17, "2500"},
+    {18, "3150"},
+    {19, "FULL"},
+};
 
 static XmlLabel xml_pickup_labels[] = {
     {PICKUP_TYPE_HB_SC, "HB>SC"},
@@ -3691,6 +4089,18 @@ static XmlLabel xml_amp_labels[] = {
     {AMP_TYPE_ACOUSTIC, "Dread Acoustic"},
     {AMP_TYPE_JUMBO_ACOUSTIC, "Jumbo Acoustic"},
     {AMP_TYPE_DIRECT, "Direct"},
+    {AMP_TYPE_BP_RCKSVT, "Ampeg SVT"},
+    {AMP_TYPE_BP_ASHDWN, "Ashdown Bass"},
+    {AMP_TYPE_BP_BASSMN, "Fender Bassman"},
+    {AMP_TYPE_BP_SOLAR, "Sunn 200S"},
+    {AMP_TYPE_BP_STELAR, "SWR Interstellar Overdrive"},
+    {AMP_TYPE_BP_COMNDO, "TraceElliot Commando"},
+    {AMP_TYPE_BP_BOMBER, "Ampeg B15"},
+    {AMP_TYPE_BP_HIWTAG, "Hiwatt Custom 50"},
+    {AMP_TYPE_BP_BOOGIE, "MesaBoogie 400+"},
+    {AMP_TYPE_BP_BASIC, "SVVR Basic Black"},
+    {AMP_TYPE_BP_DUALSH, "Dual Showman"},
+    {AMP_TYPE_BP_DEMTER, "Demeter VTBP-201S"},
 };
 
 static XmlLabel xml_amp_cab_labels[] = {
@@ -3721,6 +4131,19 @@ static XmlLabel xml_amp_cab_labels[] = {
     {AMP_CAB_DIGI_CHUNK, "DigiTech\xc2\xae Chunk 4x12"},
     {AMP_CAB_DIGI_SPANK2_12, "DigiTech\xc2\xae Spank 2x12"},
     {AMP_CAB_DIGI_SPKR_COMP, "DigiTech\xc2\xae Spkr Comp"},
+
+    /* BP355 additions */
+    {AMP_CAB_AC1X18, "Acoustic 1x18"},
+    {AMP_CAB_AM1X15, "Ampeg 1x15"},
+    {AMP_CAB_SW1X15, "SWR 1x15"},
+    {AMP_CAB_SU2X15, "Sunn 2x15"},
+    {AMP_CAB_ED4X10, "Eden 4x10"},
+    {AMP_CAB_HW4X12, "Hiwatt 4x12"},
+    {AMP_CAB_AM8X10, "Ampeg 8x10"},
+    {AMP_CAB_TW2X12, "Dual Showman 2x12"},
+    {AMP_CAB_VX2X12, "Vox AC30 2x12"},
+    {AMP_CAB_MA4X12, "Marshall 1969"},
+
     {GNX_AMP_CAB_DIRECT, "Direct"},
     {GNX_AMP_CAB_TWEED1_8, "Tweed 1x8"},
     {GNX_AMP_CAB_TWEED1_12, "Tweed 1x12"},
@@ -3933,6 +4356,10 @@ static XmlLabel xml_wah_labels[] = {
     {GNX3K_WAH_TYPE_CRY, "Cry"},
     {GNX3K_WAH_TYPE_BOUTIQUE, "Boutique"},
     {GNX3K_WAH_TYPE_FULLRANGE, "Full-Range"},
+
+    {WAH_FRETLESS_1, "Fretless 1"},
+    {WAH_FRETLESS_2, "Fretless 2"},
+    {WAH_FRETLESS_3, "Fretless 3"},
 };
 
 static XmlLabel xml_exp_assign_labels[] = {
@@ -4226,6 +4653,12 @@ XmlSettings xml_settings[] = {
     {DIST_MP_TONE, DIST_POSITION, "Dist Tone", &values_0_to_99,},
     {DIST_MP_VOLUME, DIST_POSITION, "Dist Volume", &values_0_to_99,},
 
+    // BP 355
+    {DIST_SPARKDRIVE_GAIN, DIST_POSITION, "Dist Gain", &values_0_to_99,},
+    {DIST_SPARKDRIVE_TONE, DIST_POSITION, "Dist Tone", &values_0_to_99,},
+    {DIST_SPARKDRIVE_CLEAN, DIST_POSITION, "Dist Clean", &values_0_to_99,},
+    {DIST_SPARKDRIVE_VOLUME, DIST_POSITION, "Dist Volume", &values_0_to_99,},
+
     {AMP_CHANNEL, AMP_CHANNEL_POSITION, "Amp Channel", &values_a_b, xml_amp_channel_labels, G_N_ELEMENTS(xml_amp_channel_labels)},
 
     {AMP_TYPE, AMP_A_POSITION, "Amp A Type", &values_amp_type, xml_amp_labels, G_N_ELEMENTS(xml_amp_labels)},
@@ -4491,6 +4924,9 @@ XmlSettings xml_settings[] = {
     {VSWITCH_ASSIGN, FOOTSWITCH_10_POSITION, "Footswitch 10 Param", &values_vswitch_assign, xml_vswitch_assign_labels, G_N_ELEMENTS(xml_vswitch_assign_labels)},
     {VSWITCH_MIN, FOOTSWITCH_10_POSITION, "Footswitch 10 Min", &values_on_off, xml_on_off_labels, G_N_ELEMENTS(xml_on_off_labels)},
     {VSWITCH_MAX, FOOTSWITCH_10_POSITION, "Footswitch 10 Max", &values_on_off, xml_on_off_labels, G_N_ELEMENTS(xml_on_off_labels)},
+
+    // BP355 values
+    {BP_COMP_CROSSOVER, COMP_POSITION, "Crossover", &values_cmpr_crossover_freq, xml_cmpr_crossover_freq_labels, G_N_ELEMENTS(xml_cmpr_crossover_freq_labels)},
 
     // Global settings, not part of presets or standard XML.
     {TUNING_REFERENCE, GLOBAL_POSITION, "Tuning Reference", &values_0_to_99,},

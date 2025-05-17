@@ -1211,6 +1211,7 @@ SupportedFileTypes file_types[] = {
     [ RP1000 ]  = {"RP1000Preset", "*.rp1000p"},
     [ GNX4 ]    = {"GNX4 Preset", "*.g4p"},
     [ GNX3000 ] = {"GNX3kPreset", "*.g3kp"},
+    [ BP355 ]   = {"BP355Preset", "*.bp355p"},
 };
 
 static guint n_file_types = G_N_ELEMENTS(file_types);

@@ -11,6 +11,7 @@ gdigi is tool aimed to provide X-Edit functionality to Linux users. [Official we
 - RP250
 - RP255
 - RP355
+- BP355
 - RP500
 - RP1000
 - GNX3000
