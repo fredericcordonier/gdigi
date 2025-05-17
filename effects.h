@@ -105,6 +105,7 @@ enum product_id {
    RP155    = 7,
    RP255    = 8,
    RP355    = 9,
+   BP355    = 10,
 };
 
 typedef struct {

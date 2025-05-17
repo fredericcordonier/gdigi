@@ -16,21 +16,6 @@
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <child>
-              <object class="GtkMenuItem" id="mnu-settings-id">
-                <property name="visible">True</property>
-                <property name="can-focus">False</property>
-                <property name="action-name">app.settings</property>
-                <property name="label">Settings</property>
-                <property name="use-underline">True</property>
-              </object>
-            </child>
-            <child>
-              <object class="GtkSeparatorMenuItem">
-                <property name="visible">True</property>
-                <property name="can-focus">False</property>
-              </object>
-            </child>
-            <child>
               <object class="GtkMenuItem" id="mnu-quit-id">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
@@ -75,14 +60,6 @@
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
                 <property name="action-name">app.load</property>
-              </object>
-            </child>
-            <child>
-              <object class="GtkMenuItem" id="mnu-preset-import-id">
-                <property name="label">Crystalman85</property>
-                <property name="visible">True</property>
-                <property name="can-focus">False</property>
-                <property name="action-name">app.import</property>
               </object>
             </child>
           </object>

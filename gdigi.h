@@ -1122,6 +1122,9 @@ enum {
     GENETX_CHANNEL_CURRENT = 4
 };
 
+// BP355 has some specific values
+#include "bp355.h"
+
 typedef struct {
     int version;
     int type;
